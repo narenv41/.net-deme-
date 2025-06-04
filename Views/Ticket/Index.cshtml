@@ -1,0 +1,166 @@
+@model IEnumerable<Ticket>
+
+@{
+    ViewData["Title"] = "Tickets";
+    var statusOptions = new[] { "All", "Active", "Pending", "Completed" };
+}
+
+<div class="container mt-5 ticket-background text-white rounded-4 p-4 shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">🎫 All Tickets</h2>
+        <a class="btn btn-success fw-semibold rounded-pill px-4 shadow-sm" href="/Ticket/Create">+ Create Ticket</a>
+    </div>
+
+    <!-- Live Search & Filter UI -->
+    <div class="row g-3 mb-4 align-items-center">
+        <div class="col-md-6">
+            <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm" placeholder="🔍 Search by title..." />
+        </div>
+        <div class="col-md-6 text-md-end">
+            @foreach (var status in statusOptions)
+            {
+                <button type="button"
+                        class="btn btn-sm status-filter-btn rounded-pill px-3 py-2 fw-semibold me-2 mb-2"
+                        data-status="@status">
+                    @status
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Ticket Table -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <table class="table table-hover text-center align-middle mb-0">
+                <thead class="table-light text-dark">
+                    <tr>
+                        <th class="text-start ps-4">Title</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketTable">
+                    @foreach (var ticket in Model)
+                    {
+                        <tr class="ticket-row bg-white hover-row"
+                            data-title="@ticket.Title"
+                            data-status="@ticket.Status">
+                            <td class="text-start ps-4 fw-semibold">@ticket.Title</td>
+                            <td>
+                                <span class="badge fs-6 px-3 py-2 rounded-pill @GetStatusBadgeClass(ticket.Status)">
+                                    @ticket.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a class="btn btn-outline-primary btn-sm rounded-pill px-3" href="/Ticket/Details/@ticket.Id">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Active" => "bg-info text-dark",
+            "Completed" => "bg-success text-white",
+            "Pending" => "bg-warning text-dark",
+            _ => "bg-secondary text-white"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const statusButtons = document.querySelectorAll('.status-filter-btn');
+        const ticketRows = document.querySelectorAll('.ticket-row');
+
+        let activeStatus = "All";
+
+        // Filter Function
+        function filterTickets() {
+            const query = searchInput.value.toLowerCase();
+
+            ticketRows.forEach(row => {
+                const title = row.dataset.title.toLowerCase();
+                const status = row.dataset.status;
+
+                const matchesSearch = title.includes(query);
+                const matchesStatus = activeStatus === "All" || status === activeStatus;
+
+                row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+            });
+        }
+
+        // Live search event
+        searchInput.addEventListener('input', filterTickets);
+
+        // Status button click event
+        statusButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active from others
+                statusButtons.forEach(b => b.classList.remove('btn-primary', 'text-white'));
+                // Set this one as active
+                button.classList.add('btn-primary', 'text-white');
+                activeStatus = button.dataset.status;
+                filterTickets();
+            });
+        });
+
+        // Trigger default filter on load
+        document.querySelector('[data-status="All"]').classList.add('btn-primary', 'text-white');
+    </script>
+}
+
+<style>
+    .ticket-background {
+        background: linear-gradient(178deg, rgba(47, 47, 48, 1) 26%, rgba(80, 80, 191, 1) 92%);
+    }
+
+    .table tbody tr.hover-row:hover {
+        background-color: #eaf1fb !important;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .table th {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .table td {
+        font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+        background-color: #fff;
+        border: 1px solid #ced4da;
+    }
+
+    .form-control::placeholder {
+        color: #999;
+    }
+
+    .status-filter-btn {
+        background-color: #f1f1f1;
+        color: #333;
+        border: none;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .status-filter-btn:hover {
+        background-color: #e0e0e0;
+    }
+
+    .status-filter-btn.btn-primary {
+        background-color: #007bff !important;
+    }
+</style>

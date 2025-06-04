@@ -1,0 +1,373 @@
+@model Ticket
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
+
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary glowing-back-btn d-inline-flex align-items-center gap-1">
+            <span class="material-symbols-rounded">arrow_back</span> Back
+        </a>
+    </div>
+
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <div class="card-header text-white custom-gradient">
+            <h4 class="mb-0">@Model.Title</h4>
+        </div>
+
+        <div class="card-body bg-light-subtle" style="background-color: #4A4A4A;">
+            <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-info me-2 py-2 px-3 rounded-pill shadow-sm">Status: @Model.Status</span>
+                    <span class="badge bg-secondary py-2 px-3 rounded-pill shadow-sm">Department: @Model.Department</span>
+                </div>
+
+                @if (Model.Status != "Completed")
+                {
+                    <form asp-action="CloseTicket" asp-controller="Ticket" method="post" class="m-0">
+                        <input type="hidden" name="ticketId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-close-ticket d-inline-flex align-items-center gap-1">
+                            <span class="material-symbols-rounded">check_circle</span> Close Ticket
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">✅ This ticket is completed</span>
+                }
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-semibold">Description</h6>
+                <p class="text-muted">@Model.Description</p>
+            </div>
+            <div class="mb-3 text-end">
+    <button class="btn btn-warning rounded-pill shadow-sm d-inline-flex align-items-center gap-1" id="summarizeBtn">
+        <span class="material-symbols-rounded">smart_toy</span> Summarize Ticket
+    </button>
+</div>
+
+            <div class="mb-4">
+                <h5 class="border-bottom pb-2 fw-bold">Messages</h5>
+                <div class="chat-container p-3 bg-white rounded-3 shadow-sm overflow-auto" id="chat-box">
+                    @foreach (var msg in Model.Messages.OrderBy(m => m.Timestamp))
+                    {
+                        var isCurrentUser = msg.Sender == User.Identity?.Name;
+                        <div class="chat-message-wrapper @(isCurrentUser ? "justify-end" : "justify-start")">
+                            <div class="chat-message">
+                                @if (!isCurrentUser)
+                                {
+                                    <div class="chat-sender text-primary fw-bold">@msg.Sender</div>
+                                }
+                                <div class="chat-bubble">
+                                    <span>@msg.Text</span>
+                                    @if (!string.IsNullOrEmpty(msg.FileName) && msg.FileData != null)
+                                    {
+                                        <div class="mt-1">
+                                            <a href="@Url.Action("DownloadFile", "Ticket", new { id = msg.Id })" target="_blank" rel="noopener noreferrer" class="text-decoration-none chat-attachment">
+                                                📎 <strong>@msg.FileName</strong>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="chat-timestamp text-muted small">@msg.Timestamp.ToLocalTime().ToString("g")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <form asp-action="AddMessage" asp-controller="Ticket" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2 mt-3" id="message-form">
+                <input type="hidden" name="ticketId" value="@Model.Id" />
+                <input type="text" name="msgText" id="msgText" class="form-control rounded-3 shadow-sm" placeholder="Type a message..." autocomplete="off" required />
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="file" id="fileUpload" name="file" class="d-none" />
+                    <label for="fileUpload" class="upload-icon-label" title="Upload File">
+                        <span class="material-symbols-rounded upload-icon">attach_file</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary w-auto align-self-end d-flex align-items-center gap-1 rounded-pill shadow">
+                    <span class="material-symbols-rounded">send</span> Send
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- AI Summary Modal -->
+<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg rounded-4 border-0">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="summaryModalLabel">
+                    <span class="material-symbols-rounded me-2">insights</span> AI Ticket Summary
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="summaryText" class="fs-6 text-muted">⏳ Generating summary...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+    // AJAX submit for new message
+    document.getElementById('message-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const newMsg = await response.json();
+
+            appendMessageToChat(newMsg);
+
+            form.msgText.value = '';
+            form.querySelector('input[type="file"]').value = '';
+
+            // Scroll chat to bottom
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+        }
+    });
+
+    function appendMessageToChat(msg) {
+        const chatBox = document.getElementById('chat-box');
+        const currentUser = '@User.Identity?.Name';
+
+        const isCurrentUser = msg.sender === currentUser;
+
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.classList.add('chat-message-wrapper', isCurrentUser ? 'justify-end' : 'justify-start');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message');
+
+        if (!isCurrentUser) {
+            const senderDiv = document.createElement('div');
+            senderDiv.classList.add('chat-sender', 'text-primary', 'fw-bold');
+            senderDiv.textContent = msg.sender;
+            messageDiv.appendChild(senderDiv);
+        }
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.classList.add('chat-bubble');
+        bubbleDiv.textContent = msg.text;
+
+        if (msg.fileName && msg.fileUrl) {
+            const fileDiv = document.createElement('div');
+            fileDiv.classList.add('mt-1');
+            const link = document.createElement('a');
+            link.href = msg.fileUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.classList.add('text-decoration-none', 'chat-attachment');
+            link.innerHTML = '📎 <strong>' + msg.fileName + '</strong>';
+            fileDiv.appendChild(link);
+            bubbleDiv.appendChild(fileDiv);
+        }
+
+        messageDiv.appendChild(bubbleDiv);
+
+        const timestampDiv = document.createElement('div');
+        timestampDiv.classList.add('chat-timestamp', 'text-muted', 'small');
+        timestampDiv.textContent = new Date(msg.timestamp).toLocaleString();
+        messageDiv.appendChild(timestampDiv);
+
+        wrapperDiv.appendChild(messageDiv);
+        chatBox.appendChild(wrapperDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+<script src="/js/chat.js"></script>
+
+
+<style>
+/* Back Button with Glow */
+.glowing-back-btn {
+    border-color: #adb5bd;
+    color: #adb5bd;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 0 transparent;
+}
+
+.glowing-back-btn:hover {
+    background-color: #e9ecef;
+    color: #495057;
+    box-shadow: 0 0 10px #adb5bd, 0 0 20px #adb5bd, 0 0 30px #adb5bd;
+}
+
+/* Red Close Button */
+.btn-close-ticket {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50rem;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 transparent;
+}
+
+.btn-close-ticket:hover {
+    background-color: #bd2130;
+    box-shadow: 0 0 10px #dc3545, 0 0 20px #dc3545;
+}
+
+/* Upload Icon */
+.upload-icon-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #adb5bd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.upload-icon-label:hover {
+    background-color: #e2e6ea;
+    box-shadow: 0 0 10px #adb5bd;
+}
+
+.upload-icon {
+    font-size: 20px;
+    color: #495057;
+}
+
+/* Optional: Gradient Header */
+.custom-gradient {
+    background: linear-gradient(90deg, rgba(84, 84, 92, 1) 18%, rgba(0, 0, 82, 1) 100%);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Chat container and messages */
+.chat-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+}
+
+/* Wrapper to align message left or right */
+.chat-message-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.justify-start {
+    justify-content: flex-start;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.chat-message {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+/* Sender name above bubble */
+.chat-sender {
+    margin-bottom: 4px;
+}
+
+/* Message bubble */
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+}
+
+/* Bubble color for current user */
+.justify-end .chat-bubble {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom-right-radius: 4px;
+    text-align: right;
+}
+
+/* Bubble color for others */
+.justify-start .chat-bubble {
+    background-color: #f1f0f0;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    text-align: left;
+}
+
+/* Timestamp below message */
+.chat-timestamp {
+    margin-top: 2px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* Attachment link style */
+.chat-attachment {
+    color: #0d6efd;
+    text-decoration: underline;
+    font-size: 0.85rem;
+}
+
+/* Scrollbar styling (optional) */
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+</style>
+@section Scripts {
+    <script>
+        document.getElementById("summarizeBtn").addEventListener("click", async function () {
+            const ticketId = "@Model.Id";
+            const summaryText = document.getElementById("summaryText");
+            summaryText.innerHTML = "⏳ Generating summary...";
+
+            // Show modal first
+            const summaryModal = new bootstrap.Modal(document.getElementById("summaryModal"));
+            summaryModal.show();
+
+            try {
+                const response = await fetch(`/Ticket/Summarize?ticketId=${ticketId}`);
+                if (!response.ok) throw new Error("Failed to fetch summary");
+                const data = await response.text();
+                summaryText.innerHTML = `<p class="text-dark">${data}</p>`;
+            } catch (err) {
+                summaryText.innerHTML = `<div class="text-danger">❌ Failed to generate summary.</div>`;
+                console.error(err);
+            }
+        });
+    </script>
+}

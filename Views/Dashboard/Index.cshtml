@@ -1,0 +1,162 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-5 animate__animated animate__fadeInDown white">🎫 Ticket Dashboard</h2>
+
+    <div class="row g-4">
+        <!-- Available Tickets Card -->
+        <div class="col-md-6">
+            <div class="card shadow-lg text-white bg-primary animate__animated animate__fadeInLeft">
+                <div class="card-body">
+                    <h5 class="card-title">Available Tickets</h5>
+                    <h2>@Model.AvailableTicketsCount</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Tickets Card -->
+        <div class="col-md-6">
+            <div class="card shadow-lg text-white bg-success animate__animated animate__fadeInRight">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Tickets</h5>
+                    <h2>@Model.CompletedTicketsCount</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-5">
+        <div class="col-md-6">
+            <div class="card bg-transparent border-0 shadow-sm p-4 animate__animated animate__fadeInUp">
+                <h5 class="text-center mb-3">Ticket Status Overview</h5>
+                <canvas id="ticketsChart" height="250" style="background-color: transparent;"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card bg-transparent border-0 shadow-sm p-4 animate__animated animate__fadeInUp">
+                <h5 class="text-center mb-3">Ticket Trends Over Time</h5>
+                <canvas id="ticketTrendsChart" height="250" style="background-color: transparent;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Plugin to make Chart.js background fully transparent
+        const transparentBackgroundPlugin = {
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart) => {
+                const ctx = chart.canvas.getContext('2d');
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Fully transparent
+                ctx.fillRect(0, 0, chart.width, chart.height);
+                ctx.restore();
+            }
+        };
+
+        // Doughnut Chart - Ticket Status
+        const ticketsCtx = document.getElementById('ticketsChart').getContext('2d');
+        new Chart(ticketsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Available', 'Completed'],
+                datasets: [{
+                    label: 'Tickets',
+                    data: [@Model.AvailableTicketsCount, @Model.CompletedTicketsCount],
+                    backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(75, 192, 192, 0.7)'],
+                    borderColor: ['rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                animation: {
+                    animateScale: true
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tickets Overview'
+                    }
+                }
+            },
+            plugins: [transparentBackgroundPlugin]
+        });
+
+        // Line Chart - Ticket Trends Over Time
+        fetch('@Url.Action("GetTicketTrends", "Ticket")')
+            .then(response => response.json())
+            .then(data => {
+                const labels = data.map(item => item.date);
+                const available = data.map(item => item.available);
+                const completed = data.map(item => item.completed);
+
+                const trendsCtx = document.getElementById('ticketTrendsChart').getContext('2d');
+                new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Available Tickets',
+                                data: available,
+                                fill: false,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Completed Tickets',
+                                data: completed,
+                                fill: false,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeInOutQuart'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Ticket Trends Over Time'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Tickets'
+                                }
+                            }
+                        }
+                    },
+                    plugins: [transparentBackgroundPlugin]
+                });
+            });
+    </script>
+}

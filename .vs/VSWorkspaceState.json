@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\ViewModels",
+    "\\Views",
+    "\\Views\\Account",
+    "\\Views\\Home",
+    "\\Views\\Shared",
+    "\\wwwroot"
   ],
-  "SelectedNode": "\\web.config",
+  "SelectedNode": "\\Views",
   "PreviewInSolutionExplorer": false
 }

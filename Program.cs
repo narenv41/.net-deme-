@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SampleMvcApp.Support;
 using System.Net;
+using Microsoft.EntityFrameworkCore;
+using SampleMvcApp.Hubs;
 
 using Microsoft.IdentityModel.Logging;
 
@@ -18,6 +20,11 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
     options.Domain = builder.Configuration["Auth0:Domain"];
     options.ClientId = builder.Configuration["Auth0:ClientId"];
 });
+builder.Services.AddSignalR();
+
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure the HTTP request pipeline.
 builder.Services.ConfigureSameSiteNoneCookies();
@@ -30,9 +37,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseStaticFiles();
 app.UseCookiePolicy();
-
+app.MapHub<ChatHub>("/chatHub");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

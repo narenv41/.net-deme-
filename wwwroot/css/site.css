@@ -35,3 +35,38 @@ body {
         display: none;
     }
 }
+/* Override Argon Dashboard defaults with your original colors */
+
+/* Sidebar */
+#sidenav-main {
+    background-color: #343a40 !important;
+}
+.navbar-nav .nav-link,
+.navbar-nav .nav-link .nav-link-text {
+    color: #adb5bd !important;
+}
+.navbar-nav .nav-link.active {
+    background-color: #495057 !important;
+    color: #fff !important;
+}
+
+/* Top Navbar */
+.navbar-top {
+    background-color: #6c757d !important;
+}
+.navbar-top .navbar-nav .nav-link,
+.navbar-top .navbar-nav span {
+    color: #fff !important;
+}
+
+/* Cards (optional based on your dashboard view) */
+.card.bg-danger {
+    background-color: #dc3545 !important;
+}
+.card.bg-success {
+    background-color: #28a745 !important;
+}
+.background-color{
+background: #515178;
+background: linear-gradient(90deg, rgba(81, 81, 120, 1) 0%, rgba(32, 32, 122, 1) 19%, rgba(32, 116, 135, 1) 100%);
+}

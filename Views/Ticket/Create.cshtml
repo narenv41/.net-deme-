@@ -1,0 +1,64 @@
+@model Ticket
+
+@{
+    ViewData["Title"] = "Create Ticket";
+}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet">
+
+ <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary glowing-back-btn d-inline-flex align-items-center gap-1">
+            <span class="material-symbols-rounded">arrow_back</span> Back
+        </a>
+    </div>
+<div class="container mt-5" class="background-color">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Create New Ticket</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Title</label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter the ticket title" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                
+                        <div class="mb-3">
+                            <label asp-for="Department" class="form-label">Department</label>
+<select asp-for="Department" class="form-control">
+    <option value="">-- Select Department --</option>
+    <option>Database</option>
+    <option>Azure</option>
+    <option>.NET</option>
+</select>
+<span asp-validation-for="Department" class="text-danger"></span>
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+<style>.glowing-back-btn {
+    border-color: #adb5bd;
+    color: #adb5bd;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 0 transparent;
+}
+
+.glowing-back-btn:hover {
+    background-color: #e9ecef;
+    color: #495057;
+    box-shadow: 0 0 10px #adb5bd, 0 0 20px #adb5bd, 0 0 30px #adb5bd;
+}</style>

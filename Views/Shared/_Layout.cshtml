@@ -1,101 +1,182 @@
-﻿<!DOCTYPE html>
-<html style="background-color: #b8bbc0;">
-<head style="background-color: #b8bbc0;">
+﻿@using Microsoft.AspNetCore.Identity
+
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Webapp1</title>
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-    </environment>
-</head>
-<body style="background-color: #b8bbc0;">
-    <nav class="navbar navbar-inverse  navbar-fixed-top centered" style="background-color: #5f4c4c;">
-         
-        
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>q
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @* <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-logo"><img src="wwwroot/images/banner1.svg" alt=""></a> *@
-            </div>
-            <div class="navbar-collapse centered" >
-                <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="50" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-  <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-  <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-</svg></li>
-<li>       </li>
-                        <li><a asp-controller="Account" asp-action="Profile">Hello @User.Identity.Name!</a></li>
-                        <li><a id="qsLogoutBtn" asp-controller="Account" asp-action="Logout"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-  <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
-</svg></a></li>
-                    }
-                    else
-{
-    <li>
-        <a id="qsLoginBtn" asp-controller="Account" asp-action="Login">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
-  <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
-</svg>
-        </a>
-    </li>
-}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" />
 
-                </ul>
-            </div>
-        </div>
+    <style>
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(180deg, #1f1f2e, #2a2f45);
+            color: #fff;
+            padding-top: 60px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar a {
+            color: #adb5bd;
+            display: block;
+            padding: 15px 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: #495057;
+            color: #ffffff;
+            border-left: 4px solid #0dcaf0;
+        }
+
+        .sidebar .sidebar-header {
+            font-size: 1.6rem;
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #444;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .navbar-custom {
+            height: 60px;
+            background:linear-gradient(180deg, #1f1f2e, #2a2f45);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 1030;
+        }
+
+        .navbar-custom .navbar-brand {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .navbar-custom .nav-link {
+            color: #e9ecef;
+            font-weight: 600;
+        }
+
+        .navbar-custom .nav-link:hover {
+            color: #fff;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 90px 30px 60px 30px;
+            min-height: 100vh;
+            background: #1e1e1e
+          
+        }
+
+        footer {
+            margin-left: 250px;
+            padding: 15px 30px;
+            color: #adb5bd;
+            font-size: 0.9rem;
+            border-top: 1px solid #495057;
+            background-color: #1c1c2c;
+            position: fixed;
+            bottom: 0;
+            width: calc(100% - 250px);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        @@media screen and (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .content, footer, .navbar-custom {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">Webapp1</div>
+        <a asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">Dashboard</a>
+        <a asp-controller="Ticket" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Ticket" ? "active" : "")">Tickets</a>
+        <a asp-controller="Account" asp-action="Profile" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")">Profile</a>
+        <a asp-controller="Account" asp-action="Logout">Logout</a>
     </nav>
 
-    <partial name="_CookieConsentPartial" />    
+    <!-- Navbar -->
+    <nav class="navbar-custom d-flex">
+        <a class="navbar-brand" href="#">@ViewData["Title"]</a>
+        
+        <ul class="navbar-nav d-flex flex-row align-items-center ms-auto">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <li class="nav-item me-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                    </svg>
+                </li>
+                <li class="nav-item me-3">
+                    <span class="nav-link text-white">Hello, @User.Identity.Name!</span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-controller="Account" asp-action="Logout" title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                        </svg>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-controller="Account" asp-action="Login">Login</a>
+                </li>
+            }
+        </ul>
+    </nav>
 
-    <div class="container body-content">
+    <!-- Main Content -->
+    <main class="content">
         @RenderBody()
-        @* <hr />
-        <footer>
-            <p>&copy; 2018 - SampleMvcApp</p>
-        </footer> *@
-    </div>
+    </main>
 
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
-        </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+    <!-- Footer -->
+    <footer>
+        &copy; @DateTime.Now.Year - Webapp1. All rights reserved.
+    </footer>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
+    
 </body>
 </html>
