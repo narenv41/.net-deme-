@@ -22,4 +22,6 @@ if __name__ == "__main__":
     priority = classify_priority(input_text)
     print(priority)
 
-#we need to be able to run this faster . FOr every message i type it should run through this model which detects emotion. BUt when initially creating the ticket we need to classify if the ticket has low priority or high priority dependind upon the user's descripton(Liket total outage:High, Application completely down:HIGH, similar to that we are supposed to be able to classify all the tickets initially , to do that we need an ai model which wil be able to classify what type of priorityty, we can either use pre-trained model or train it with respective to the company)
+#we need to be able to run this faster . FOr every message i type it should run through this model which detects emotion. 
+#BUt when initially creating the ticket we need to classify if the ticket has low priority or high priority dependind upon the user's descripton(Liket total outage:High, Application completely down:HIGH, similar to that we are supposed to be able to classify all the tickets initially ,
+#to do that we need an ai model which wil be able to classify what type of priorityty, we can either use pre-trained model or train it with respective to the company)
