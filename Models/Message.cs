@@ -1,15 +1,23 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
-
-public class Message
+namespace SampleMvcApp.Models
 {
-    public int Id { get; set; }
-    public int TicketId { get; set; }
-    public string? Sender { get; set; }           // Nullable if Sender can be NULL
-    public string? Text { get; set; }             // Nullable if Text can be NULL
-    public DateTime Timestamp { get; set; }
+    public class Message
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = null!;
+        public string TicketId { get; set; } = null!;
+        public string Sender { get; set; } = "";
+        public string Text { get; set; } = "";
+        public DateTime Timestamp { get; set; }
 
-    public byte[]? FileData { get; set; }
-    public string? FileName { get; set; }
-    public string? ContentType { get; set; }
+        public string? FileName { get; set; }
+        public string? ContentType { get; set; }
+        public byte[]? FileData { get; set; }
+    }
 }

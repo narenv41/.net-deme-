@@ -10,6 +10,7 @@ C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\SampleMvcApp.pdb
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Auth0.AspNetCore.Authentication.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Azure.Core.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Azure.Identity.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\DnsClient.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Humanizer.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
@@ -46,8 +47,12 @@ C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.IdentityModel.Pro
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Microsoft.Win32.SystemEvents.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\MongoDB.Bson.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\MongoDB.Driver.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Mono.TextTemplating.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\SharpCompress.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\Snappier.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.ClientModel.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.CodeDom.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.Composition.AttributedModel.dll
@@ -64,6 +69,7 @@ C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.Runtime.Caching.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.Security.Permissions.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\System.Windows.Extensions.dll
+C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\ZstdSharp.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\de\Microsoft.CodeAnalysis.resources.dll
 C:\Naren\Programs\Blazer\.net-deme-\bin\Debug\net9.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -151,6 +157,7 @@ C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\SampleMvcApp.RazorAssemblyI
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\SampleMvcApp.RazorAssemblyInfo.cs
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\SampleMvcApp.sourcelink.json
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\scopedcss\bundle\SampleMvcApp.styles.css
+C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\3jv75fl1f5-4qgf84lyrn.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\06hpj5m64k-8qo50a92ce.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\z8t6hisipl-90yqlj465b.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\3i26v80l26-v6jnq5ttib.gz
@@ -187,6 +194,7 @@ C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\diqhcxpf7r-a8eee
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\q1tcrwkhme-fc9074g7ds.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\lofblr7bm3-b804xvqo1w.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\7765pl6hiy-afgyafcsqt.gz
+C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\ta9zikwjhg-fsq0htis7s.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\inmy0vzxdb-knoxzkqifl.gz
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\staticwebassets.build.json
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\staticwebassets.build.json.cache
@@ -198,5 +206,3 @@ C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\refint\SampleMvcApp.dll
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\SampleMvcApp.pdb
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\SampleMvcApp.genruntimeconfig.cache
 C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\ref\SampleMvcApp.dll
-C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\3jv75fl1f5-4qgf84lyrn.gz
-C:\Naren\Programs\Blazer\.net-deme-\obj\Debug\net9.0\compressed\ta9zikwjhg-fsq0htis7s.gz

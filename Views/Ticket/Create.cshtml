@@ -1,5 +1,4 @@
 @model Ticket
-
 @{
     ViewData["Title"] = "Create Ticket";
 }
@@ -27,13 +26,13 @@
                 
                         <div class="mb-3">
                             <label asp-for="Department" class="form-label">Department</label>
-<select asp-for="Department" class="form-control">
-    <option value="">-- Select Department --</option>
-    <option>Database</option>
-    <option>Azure</option>
-    <option>.NET</option>
-</select>
-<span asp-validation-for="Department" class="text-danger"></span>
+                                <select asp-for="Department" class="form-control">
+                                    <option value="">-- Select Department --</option>
+                                    <option>Database</option>
+                                    <option>Azure</option>
+                                    <option>.NET</option>
+                                </select>
+                                <span asp-validation-for="Department" class="text-danger"></span>
 
                         </div>
 
@@ -43,14 +42,34 @@
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
+                        
+                        
+
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span id="submitText">Submit Ticket</span>
+                            <span id="spinner" class="spinner d-none" role="status" aria-hidden="true"></span>
+                            </button>
+
                         </div>
+                        <div class="mb-3">
+    <label asp-for="Priority" class="form-label">Priority</label>
+    <select asp-for="Priority" class="form-control" id="prioritySelect">
+        <option value="">-- Auto (AI Detect) --</option>
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+    </select>
+    <span asp-validation-for="Priority" class="text-danger"></span>
+</div>
+
+
                     </form>
                 </div>
             </div>
         </div>
-<style>.glowing-back-btn {
+<style>
+    .glowing-back-btn {
     border-color: #adb5bd;
     color: #adb5bd;
     transition: all 0.3s ease-in-out;
@@ -61,4 +80,34 @@
     background-color: #e9ecef;
     color: #495057;
     box-shadow: 0 0 10px #adb5bd, 0 0 20px #adb5bd, 0 0 30px #adb5bd;
-}</style>
+
+
+}
+@@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+</style>
+@section Scripts {
+<script>
+    document.querySelector('form').addEventListener('submit', function () {
+        const btn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('spinner');
+        const text = document.getElementById('submitText');
+
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        text.textContent = 'Processing...';
+    });
+</script>
+}

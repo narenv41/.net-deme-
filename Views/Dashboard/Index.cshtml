@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <div class="container mt-5">
-    <h2 class="text-center mb-5 animate__animated animate__fadeInDown white">🎫 Ticket Dashboard</h2>
+    <h2 class="text-center mb-5 animate__animated animate__fadeInDown white text-white">🎫 Ticket Dashboard</h2>
 
     <div class="row g-4">
         <!-- Available Tickets Card -->
         <div class="col-md-6">
             <div class="card shadow-lg text-white bg-primary animate__animated animate__fadeInLeft">
                 <div class="card-body">
-                    <h5 class="card-title">Available Tickets</h5>
+                    <h5 class="card-title text-white">Available Tickets</h5>
                     <h2>@Model.AvailableTicketsCount</h2>
                 </div>
             </div>
@@ -34,14 +34,14 @@
     <div class="row g-5">
         <div class="col-md-6">
             <div class="card bg-transparent border-0 shadow-sm p-4 animate__animated animate__fadeInUp">
-                <h5 class="text-center mb-3">Ticket Status Overview</h5>
+                <h5 class="text-center mb-3 text-white">Ticket Status Overview</h5>
                 <canvas id="ticketsChart" height="250" style="background-color: transparent;"></canvas>
             </div>
         </div>
 
         <div class="col-md-6">
             <div class="card bg-transparent border-0 shadow-sm p-4 animate__animated animate__fadeInUp">
-                <h5 class="text-center mb-3">Ticket Trends Over Time</h5>
+                <h5 class="text-center mb-3 text-white">Ticket Trends Over Time</h5>
                 <canvas id="ticketTrendsChart" height="250" style="background-color: transparent;"></canvas>
             </div>
         </div>

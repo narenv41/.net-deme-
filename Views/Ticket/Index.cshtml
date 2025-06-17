@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Tickets";
-    var statusOptions = new[] { "All", "Active", "Pending", "Completed" };
+    var statusOptions = new[] { "All", "Active","Completed" };
 }
 
 <div class="container mt-5 ticket-background text-white rounded-4 p-4 shadow-lg">
@@ -11,12 +11,12 @@
         <a class="btn btn-success fw-semibold rounded-pill px-4 shadow-sm" href="/Ticket/Create">+ Create Ticket</a>
     </div>
 
-    <!-- Live Search & Filter UI -->
+    <!-- Search, Status Filter, Priority Sort -->
     <div class="row g-3 mb-4 align-items-center">
-        <div class="col-md-6">
+        <div class="col-md-5">
             <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm" placeholder="🔍 Search by title..." />
         </div>
-        <div class="col-md-6 text-md-end">
+        <div class="col-md-4 text-md-end">
             @foreach (var status in statusOptions)
             {
                 <button type="button"
@@ -25,6 +25,13 @@
                     @status
                 </button>
             }
+        </div>
+        <div class="col-md-3 text-md-end">
+            <select id="prioritySort" class="form-select rounded-pill shadow-sm">
+                <option value="">🧮 Sort by Priority</option>
+                <option value="high-to-low">⬇️ High → Low</option>
+                <option value="low-to-high">⬆️ Low → High</option>
+            </select>
         </div>
     </div>
 
@@ -36,6 +43,7 @@
                     <tr>
                         <th class="text-start ps-4">Title</th>
                         <th>Status</th>
+                        <th>Priority</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -44,11 +52,17 @@
                     {
                         <tr class="ticket-row bg-white hover-row"
                             data-title="@ticket.Title"
-                            data-status="@ticket.Status">
+                            data-status="@ticket.Status"
+                            data-priority="@ticket.Priority">
                             <td class="text-start ps-4 fw-semibold">@ticket.Title</td>
                             <td>
                                 <span class="badge fs-6 px-3 py-2 rounded-pill @GetStatusBadgeClass(ticket.Status)">
                                     @ticket.Status
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge fs-6 px-3 py-2 rounded-pill @GetPriorityBadgeClass(ticket.Priority)">
+                                    @ticket.Priority
                                 </span>
                             </td>
                             <td>
@@ -75,21 +89,32 @@
             _ => "bg-secondary text-white"
         };
     }
+
+    private string GetPriorityBadgeClass(string priority)
+    {
+        return priority switch
+        {
+            "High" => "bg-danger glow-badge text-white",
+            "Medium" => "bg-warning glow-badge text-dark",
+            "Low" => "bg-success glow-badge text-white",
+            _ => "bg-secondary text-white"
+        };
+    }
 }
 
 @section Scripts {
     <script>
         const searchInput = document.getElementById('searchInput');
         const statusButtons = document.querySelectorAll('.status-filter-btn');
-        const ticketRows = document.querySelectorAll('.ticket-row');
+        const ticketTable = document.getElementById('ticketTable');
+        const prioritySort = document.getElementById('prioritySort');
 
         let activeStatus = "All";
 
-        // Filter Function
         function filterTickets() {
             const query = searchInput.value.toLowerCase();
 
-            ticketRows.forEach(row => {
+            document.querySelectorAll('.ticket-row').forEach(row => {
                 const title = row.dataset.title.toLowerCase();
                 const status = row.dataset.status;
 
@@ -98,24 +123,41 @@
 
                 row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
             });
+
+            sortTickets();
         }
 
-        // Live search event
+        function sortTickets() {
+            const rows = Array.from(ticketTable.querySelectorAll('tr'));
+            const order = prioritySort.value;
+            const priorityValue = { "High": 3, "Medium": 2, "Low": 1 };
+
+            if (!order) return;
+
+            rows.sort((a, b) => {
+                const pa = priorityValue[a.dataset.priority] || 0;
+                const pb = priorityValue[b.dataset.priority] || 0;
+
+                return order === "high-to-low" ? pb - pa : pa - pb;
+            });
+
+            rows.forEach(row => ticketTable.appendChild(row));
+        }
+
         searchInput.addEventListener('input', filterTickets);
 
-        // Status button click event
         statusButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Remove active from others
                 statusButtons.forEach(b => b.classList.remove('btn-primary', 'text-white'));
-                // Set this one as active
                 button.classList.add('btn-primary', 'text-white');
                 activeStatus = button.dataset.status;
                 filterTickets();
             });
         });
 
-        // Trigger default filter on load
+        prioritySort.addEventListener('change', filterTickets);
+
+        // Initialize
         document.querySelector('[data-status="All"]').classList.add('btn-primary', 'text-white');
     </script>
 }
@@ -162,5 +204,26 @@
 
     .status-filter-btn.btn-primary {
         background-color: #007bff !important;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+    }
+
+    .glow-badge {
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+        font-weight: bold;
+    }
+
+    .bg-danger.glow-badge {
+        box-shadow: 0 0 8px rgba(220, 53, 69, 0.7);
+    }
+
+    .bg-warning.glow-badge {
+        box-shadow: 0 0 8px rgba(255, 193, 7, 0.7);
+    }
+
+    .bg-success.glow-badge {
+        box-shadow: 0 0 8px rgba(40, 167, 69, 0.7);
     }
 </style>

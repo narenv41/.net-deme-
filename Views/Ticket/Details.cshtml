@@ -19,6 +19,18 @@
                 <div>
                     <span class="badge bg-info me-2 py-2 px-3 rounded-pill shadow-sm">Status: @Model.Status</span>
                     <span class="badge bg-secondary py-2 px-3 rounded-pill shadow-sm">Department: @Model.Department</span>
+                    @{
+    var priorityClass = Model.Priority?.ToLower() switch
+    {
+        "very high" => "priority-very-high",
+        "high" => "priority-high",
+        "medium" => "priority-medium",
+        "low" => "priority-low",
+        _ => "priority-unknown"
+    };
+}
+<span class="badge priority-badge @priorityClass py-2 px-3 rounded-pill shadow-sm">Priority: @Model.Priority</span>
+
                 </div>
 
                 @if (Model.Status != "Completed")
@@ -346,6 +358,37 @@
     background-color: rgba(0,0,0,0.2);
     border-radius: 4px;
 }
+.priority-badge {
+    font-weight: 500;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.priority-low {
+    background-color: #6c757d;
+    box-shadow: 0 0 4px #6c757d;
+}
+
+.priority-medium {
+    background-color: #ffc107;
+    box-shadow: 0 0 6px #ffc107;
+    color: #212529;
+}
+
+.priority-high {
+    background-color: #fd7e14;
+    box-shadow: 0 0 8px #fd7e14, 0 0 12px #fd7e14;
+}
+
+.priority-very-high {
+    background-color: #dc3545;
+    box-shadow: 0 0 10px #dc3545, 0 0 16px #dc3545, 0 0 24px #dc3545;
+}
+
+.priority-unknown {
+    background-color: #adb5bd;
+    color: #212529;
+}
 
 </style>
 @section Scripts {
@@ -370,4 +413,5 @@
             }
         });
     </script>
+    
 }

@@ -1,28 +1,31 @@
 using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SampleMvcApp.Models;
+using SampleMvcApp.Services;
 using System.Diagnostics;
+using MongoDB.Bson;
+using System.Collections.Generic;
 
 [Authorize]
 public class TicketController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly TicketService _ticketService;
+    private readonly MessageService _messageService;
 
-    public TicketController(ApplicationDbContext context)
+    public TicketController(TicketService ticketService, MessageService messageService)
     {
-        _context = context;
+        _ticketService = ticketService;
+        _messageService = messageService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var tickets = _context.Tickets
-            .Include(t => t.Messages)
-            .ToList();
+        var tickets = await _ticketService.GetAllAsync();
         return View(tickets);
     }
 
@@ -30,69 +33,57 @@ public class TicketController : Controller
     {
         return View();
     }
-    [HttpGet]
-public JsonResult GetTicketTrends()
-{
-    // Step 1: Group by date without formatting and bring into memory
-    var groupedData = _context.Tickets
-        .GroupBy(t => t.CreatedAt.Date)
-        .Select(g => new
-        {
-            Date = g.Key,
-            Available = g.Count(e => e.Status == "Active"),
-            Completed = g.Count(e => e.Status == "Completed")
-        })
-        .OrderBy(g => g.Date)
-        .AsEnumerable() // switch to LINQ to Objects
-        // Step 2: format date string in memory
-        .Select(g => new
-        {
-            date = g.Date.ToString("yyyy-MM-dd"),
-            available = g.Available,
-            completed = g.Completed
-        })
-        .ToList();
 
-    return Json(groupedData);
+[HttpPost]public async Task<IActionResult> Create(Ticket ticket)
+{
+    ticket.CreatedBy = User.Identity?.Name ?? "Anonymous";
+    ticket.CreatedAt = DateTime.UtcNow;
+    ticket.Status = "Active";
+
+    if (string.IsNullOrEmpty(ticket.Priority))
+    {
+        var payload = new
+        {
+            Messages = new List<string> { ticket.Description ?? "" }
+        };
+
+        var inputJson = System.Text.Json.JsonSerializer.Serialize(payload);
+        var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "AI", "t3init.py");
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "python",
+            Arguments = $"\"{scriptPath}\" \"{ticket.Description}\"",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using (var process = Process.Start(startInfo))
+        {
+            string output = await process.StandardOutput.ReadToEndAsync();
+            ticket.Priority = output.Trim();
+        }
+    }
+
+    await _ticketService.CreateAsync(ticket);
+    return RedirectToAction("Index");
 }
 
 
-    [HttpPost]
-    public IActionResult Create(Ticket ticket)
+
+    public async Task<IActionResult> Details(string id)
     {
-        ticket.CreatedBy = User.Identity?.Name ?? "Anonymous";
-        ticket.CreatedAt = DateTime.Now;
-        ticket.Status = "Active";
-
-        _context.Tickets.Add(ticket);
-        _context.SaveChanges();
-
-        return RedirectToAction("Index");
-    }
-
-    public IActionResult Details(int id)
-    {
-        var ticket = _context.Tickets
-            .Include(t => t.Messages)
-            .FirstOrDefault(t => t.Id == id);
-
+        var ticket = await _ticketService.GetByIdWithMessagesAsync(id);
         if (ticket == null)
             return NotFound();
 
         return View(ticket);
     }
 
-    // Updated to return JSON for AJAX
     [HttpPost]
-    public async Task<IActionResult> AddMessage(int ticketId, string msgText, IFormFile? file)
+    public async Task<IActionResult> AddMessage(string ticketId, string msgText, IFormFile? file)
     {
-        var ticket = await _context.Tickets
-            .Include(t => t.Messages)
-            .FirstOrDefaultAsync(t => t.Id == ticketId);
-
-        if (ticket == null)
-            return NotFound();
-
         var message = new Message
         {
             TicketId = ticketId,
@@ -100,23 +91,22 @@ public JsonResult GetTicketTrends()
             Text = msgText ?? string.Empty,
             Timestamp = DateTime.UtcNow
         };
+        
 
         if (file != null && file.Length > 0)
         {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            message.FileData = memoryStream.ToArray();
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            message.FileData = ms.ToArray();
             message.FileName = file.FileName;
             message.ContentType = file.ContentType;
         }
 
-        _context.Messages.Add(message);
-        await _context.SaveChangesAsync();
+        await _messageService.CreateAsync(message);
 
-        // Return JSON with message data
         return Json(new
         {
-            id = message.Id,
+            id = message.Id.ToString(),
             sender = message.Sender,
             text = message.Text,
             timestamp = message.Timestamp,
@@ -127,73 +117,90 @@ public JsonResult GetTicketTrends()
         });
     }
 
-    public async Task<IActionResult> DownloadFile(int id)
+    public async Task<IActionResult> DownloadFile(string id)
     {
-        var message = await _context.Messages.FindAsync(id);
+        var message = await _messageService.GetByIdAsync(id);
         if (message == null || message.FileData == null)
             return NotFound();
 
-        var contentType = message.ContentType ?? "application/octet-stream";
-        var fileName = message.FileName ?? "attachment";
-
-        return File(message.FileData, contentType, fileName);
+        return File(message.FileData, message.ContentType ?? "application/octet-stream", message.FileName ?? "attachment");
     }
 
     [HttpPost]
-    public async Task<IActionResult> CloseTicket(int ticketId)
+    public async Task<IActionResult> CloseTicket(string ticketId)
     {
-        var ticket = await _context.Tickets.FindAsync(ticketId);
-
+        var ticket = await _ticketService.GetByIdAsync(ticketId);
         if (ticket == null)
             return NotFound();
 
         ticket.Status = "Completed";
-        await _context.SaveChangesAsync();
+        await _ticketService.UpdateAsync(ticketId, ticket);
 
         return RedirectToAction("Details", new { id = ticketId });
     }
+
     [HttpGet]
-public IActionResult Summarize(int ticketId)
-{
-    var ticket = _context.Tickets
-        .Include(t => t.Messages)
-        .FirstOrDefault(t => t.Id == ticketId);
-
-    if (ticket == null)
-        return NotFound();
-
-    var payload = new
+    public async Task<IActionResult> Summarize(string ticketId)
     {
-        Title = ticket.Title,
-        Description = ticket.Description,
-        Messages = ticket.Messages.Select(m => $"{m.Sender}: {m.Text}")
-    };
+        var ticket = await _ticketService.GetByIdWithMessagesAsync(ticketId);
+        if (ticket == null)
+            return NotFound();
 
-    var inputJson = System.Text.Json.JsonSerializer.Serialize(payload);
-    var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "summary", "t1.py");
-
-    var psi = new ProcessStartInfo
-    {
-        FileName = "python",
-        Arguments = $"\"{scriptPath}\"",
-        RedirectStandardOutput = true,
-        RedirectStandardInput = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-
-    string result;
-    using (var process = Process.Start(psi))
-    {
-        using (var sw = process.StandardInput)
+        var payload = new
         {
-            sw.WriteLine(inputJson);
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Messages = ticket.Messages.Select(m => $"{m.Sender}: {m.Text}")
+        };
+
+        var inputJson = System.Text.Json.JsonSerializer.Serialize(payload);
+        var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "summary", "t1.py");
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = "python",
+            Arguments = $"\"{scriptPath}\"",
+            RedirectStandardOutput = true,
+            RedirectStandardInput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };  
+
+        string result;
+        using (var process = Process.Start(psi))
+        {
+            using (var sw = process.StandardInput)
+            {
+                sw.WriteLine(inputJson);
+            }
+            result = process.StandardOutput.ReadToEnd();
         }
-        result = process.StandardOutput.ReadToEnd();
+
+        return Content(result);
     }
 
-    return Content(result);
-}
+    [HttpGet]
+    public async Task<JsonResult> GetTicketTrends()
+    {
+        var tickets = await _ticketService.GetAllAsync();
 
+        var grouped = tickets
+            .GroupBy(t => t.CreatedAt.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Available = g.Count(e => e.Status == "Active"),
+                Completed = g.Count(e => e.Status == "Completed")
+            })
+            .OrderBy(g => g.Date)
+            .Select(g => new
+            {
+                date = g.Date.ToString("yyyy-MM-dd"),
+                available = g.Available,
+                completed = g.Completed
+            })
+            .ToList();
 
+        return Json(grouped);
+    }
 }

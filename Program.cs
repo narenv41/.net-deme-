@@ -1,49 +1,74 @@
 ﻿using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SampleMvcApp.Support;
-using System.Net;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using SampleMvcApp.Services;
 using SampleMvcApp.Hubs;
-
-using Microsoft.IdentityModel.Logging;
+using SampleMvcApp.Support; // Assuming MongoDbSettings is here
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//To use MVC we have to explicitly declare we are using it. Doing so will prevent a System.InvalidOperationException.
+// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Auth0 setup
 builder.Services.AddAuth0WebAppAuthentication(options =>
 {
     options.Domain = builder.Configuration["Auth0:Domain"];
     options.ClientId = builder.Configuration["Auth0:ClientId"];
 });
+
+// SignalR
 builder.Services.AddSignalR();
 
+// Configure MongoDB settings from appsettings.json
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDbSettings"));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Read MongoDB config values
+var mongoSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
+if (mongoSettings == null || string.IsNullOrEmpty(mongoSettings.ConnectionString) || string.IsNullOrEmpty(mongoSettings.DatabaseName))
+{
+    throw new Exception("MongoDbSettings must be configured in appsettings.json");
+}
 
-// Configure the HTTP request pipeline.
+// Create MongoClient and get database instance
+var mongoClient = new MongoClient(mongoSettings.ConnectionString);
+var mongoDatabase = mongoClient.GetDatabase(mongoSettings.DatabaseName);
+
+
+// Register IMongoDatabase singleton
+builder.Services.AddSingleton<IMongoDatabase>(mongoDatabase);
+
+// Register your scoped services that require IMongoDatabase
+builder.Services.AddScoped<TicketService>();
+builder.Services.AddScoped<MessageService>();
+
+// Cookie policy setup
 builder.Services.ConfigureSameSiteNoneCookies();
+
 var app = builder.Build();
 
+// Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-
 app.UseStaticFiles();
 app.UseCookiePolicy();
-app.MapHub<ChatHub>("/chatHub");
+
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapDefaultControllerRoute();

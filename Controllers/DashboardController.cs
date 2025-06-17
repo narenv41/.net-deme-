@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-
+using SampleMvcApp.Models;  // Adjust namespace as needed
+using SampleMvcApp.Services;
 public class DashboardController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly TicketService _ticketService;
 
-    public DashboardController(ApplicationDbContext context)
+    public DashboardController(TicketService ticketService)
     {
-        _context = context;
+        _ticketService = ticketService;
     }
 
     public async Task<IActionResult> Index()
     {
-        var activeCount = await _context.Tickets.CountAsync(t => t.Status == "Active");
-        var completedCount = await _context.Tickets.CountAsync(t => t.Status == "Completed");
+        var activeCount = await _ticketService.CountByStatusAsync("Active");
+        var completedCount = await _ticketService.CountByStatusAsync("Completed");
 
         var model = new DashboardViewModel
         {
@@ -26,7 +26,7 @@ public class DashboardController : Controller
     }
 }
 
-// ViewModel with property names matching controller usage
+
 public class DashboardViewModel
 {
     public int AvailableTicketsCount { get; set; }
